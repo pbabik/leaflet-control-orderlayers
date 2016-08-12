@@ -180,6 +180,15 @@ L.Control.OrderLayers = L.Control.Layers.extend({
 			L.DomEvent.on(col, 'click', (this.options.order === 'normal'? this._onDownClick:this._onUpClick), this);
 			row.appendChild(col);
 			container = this._overlaysList;
+			var slid = L.DomUtil.create('input', 'leaflet-range');
+			slid.type = 'range';
+			slid.min = 0;
+			slid.max = 1;
+			slid.step = 0.1;
+			slid.value = obj.layer.options.opacity || 1;
+			slid.layerId = input.layerId;
+			L.DomEvent.on(slid,'change',this._onSlideChange, this);
+			row.appendChild(slid);
 		} else {
 			container = this._baseLayersList;
 		}
@@ -241,6 +250,12 @@ L.Control.OrderLayers = L.Control.Layers.extend({
 			replaceLayer.layer.setZIndex(newZIndex - 1);
 			this._map.fire('changeorder', obj, this);
 		}
+	},
+
+	_onSlideChange: function(e) {
+	    var layerId = e.currentTarget.layerId;
+		var obj = this._layers[layerId];
+		obj.layer.setOpacity(Number(e.target.value));
 	},
 
 	_getZIndex: function(ly) {
