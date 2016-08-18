@@ -133,6 +133,33 @@ L.Control.OrderLayers = L.Control.Layers.extend({
 		this._separator.style.display = overlaysPresent && baseLayersPresent ? '' : 'none';
 	},
 
+	_onInputClick: function () {
+		var i, input, obj,
+		    inputs = this._form.getElementsByTagName('input'),
+		    inputsLen = inputs.length;
+
+		this._handlingClick = true;
+
+		for (i = 0; i < inputsLen; i++) {
+			input = inputs[i];
+			if(input.getAttribute('type') != 'checkbox' && input.getAttribute('type') != 'radio') {
+				continue;
+			}
+			obj = this._layers[input.layerId];
+
+			if (input.checked && !this._map.hasLayer(obj.layer)) {
+				this._map.addLayer(obj.layer);
+
+			} else if (!input.checked && this._map.hasLayer(obj.layer)) {
+				this._map.removeLayer(obj.layer);
+			}
+		}
+
+		this._handlingClick = false;
+
+		this._refocusOnMap();
+	},
+
 	_addItem: function (obj) {
 		var row = L.DomUtil.create('div', 'leaflet-row');
 
@@ -208,6 +235,10 @@ L.Control.OrderLayers = L.Control.Layers.extend({
 		var replaceLayer = null;
 		var idx = this._getZIndex(obj);
 		for(var i=0; i < inputs.length; i++) {
+			var input = inputs[i];
+			if(input.getAttribute('type') != 'checkbox' && input.getAttribute('type') != 'radio') {
+				continue;
+			}
 			var auxLayer = this._layers[inputs[i].layerId];
 			var auxIdx = this._getZIndex(auxLayer);
 			if(auxLayer.overlay && (idx - 1) === auxIdx) {
@@ -236,6 +267,10 @@ L.Control.OrderLayers = L.Control.Layers.extend({
 		var replaceLayer = null;
 		var idx = this._getZIndex(obj);
 		for(var i=0; i < inputs.length; i++) {
+			var input = inputs[i];
+			if(input.getAttribute('type') != 'checkbox' && input.getAttribute('type') != 'radio') {
+				continue;
+			}
 			var auxLayer = this._layers[inputs[i].layerId];
 			var auxIdx = this._getZIndex(auxLayer);
 			if(auxLayer.overlay && (idx + 1) === auxIdx) {
@@ -251,13 +286,11 @@ L.Control.OrderLayers = L.Control.Layers.extend({
 			this._map.fire('changeorder', obj, this);
 		}
 	},
-
 	_onSlideChange: function(e) {
 	    var layerId = e.currentTarget.layerId;
 		var obj = this._layers[layerId];
 		obj.layer.setOpacity(Number(e.target.value));
 	},
-
 	_getZIndex: function(ly) {
 		var zindex = 9999999999;
 		if(ly.layer.options && ly.layer.options.zIndex) {
